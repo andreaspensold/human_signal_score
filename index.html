@@ -547,7 +547,7 @@
             const username = data.username;
             const reasoning = data.analysis_summary || data.reasoning;
             const confidence = data.confidence_level || 'medium';
-            const tweetCount = data.tweet_count;
+            // const tweetCount = data.tweet_count;
             
             // Determine score category and interpretation
             let scoreCategory, scoreClass, interpretation;
@@ -598,10 +598,10 @@
                         <div class="stat-value">${score}</div>
                         <div class="stat-label">Score</div>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${tweetCount}</div>
-                        <div class="stat-label">Tweets</div>
-                    </div>
+                   // <div class="stat-item">
+                  //      <div class="stat-value">${tweetCount}</div>
+                  //      <div class="stat-label">Tweets</div>
+                  //  </div>
                     <div class="stat-item">
                         <div class="stat-value">${confidence.charAt(0).toUpperCase() + confidence.slice(1)}</div>
                         <div class="stat-label">Confidence</div>

@@ -543,8 +543,9 @@
     </div>
 
     <script>
-       
+
         const WEBHOOK_URL = 'https://n8n.srv749121.hstgr.cloud/webhook-test/b25a7827-aad8-49fd-8e32-b0fdb56239d6';
+        
         
         document.getElementById('analysisForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -638,7 +639,7 @@
             const tweetCount = data.tweet_count;
             
             // Determine score category and interpretation
-            let scoreCategory, scoreClass, interpretation, confidenceDots;
+            let scoreCategory, scoreClass, interpretation;
             if (score >= 70) {
                 scoreCategory = 'high';
                 scoreClass = 'high';
@@ -655,9 +656,12 @@
 
             // Generate confidence dots
             const confidenceLevel = confidence.toLowerCase();
-            const dots = ['low', 'medium', 'high'].map(level => 
-                `<div class="confidence-dot ${confidenceLevel === level || (confidenceLevel === 'high' && level !== 'low') || (confidenceLevel === 'medium' && level === 'low') ? 'active' : ''}"></div>`
-            ).join('');
+            const dots = ['low', 'medium', 'high'].map(level => {
+                const isActive = (confidenceLevel === level) || 
+                               (confidenceLevel === 'high' && level !== 'low') || 
+                               (confidenceLevel === 'medium' && level === 'low');
+                return `<div class="confidence-dot ${isActive ? 'active' : ''}"></div>`;
+            }).join('');
             
             const resultHTML = `
                 <div class="score-display">

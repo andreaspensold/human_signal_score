@@ -338,11 +338,17 @@
     </div>
 
     <script>
-       
-        const WEBHOOK_URL = 'https://n8n.srv749121.hstgr.cloud/webhook-test/b25a7827-aad8-49fd-8e32-b0fdb56239d6';
+        
+        const WEBHOOK_URL = 'https://n8n.srv749121.hstgr.cloud/webhook/b25a7827-aad8-49fd-8e32-b0fdb56239d6';
         
         document.getElementById('analysisForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Check if webhook URL is still the placeholder
+            if (WEBHOOK_URL.includes('your-n8n-instance') || WEBHOOK_URL === 'YOUR_N8N_WEBHOOK_URL_HERE') {
+                showErrorResult('Please update the WEBHOOK_URL in the HTML code with your actual n8n webhook URL');
+                return;
+            }
             
             const resultDiv = document.getElementById('result');
             const loadingDiv = document.getElementById('loading');
@@ -355,7 +361,11 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Analyzing...';
             
+            console.log('🚀 Starting analysis for:', twitterHandle);
+            console.log('📡 Webhook URL:', WEBHOOK_URL);
+            
             try {
+                console.log('📤 Sending request...');
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: {
@@ -366,21 +376,49 @@
                     })
                 });
                 
+                console.log('📥 Response received:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: [...response.headers.entries()]
+                });
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('❌ Response error:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
                 }
                 
                 const data = await response.json();
+                console.log('✅ Parsed response data:', data);
                 
                 if (data.success) {
+                    console.log('🎉 Analysis successful!');
                     showSuccessResult(data);
                 } else {
-                    throw new Error(data.message || 'Analysis failed');
+                    console.error('❌ Analysis failed:', data);
+                    throw new Error(data.message || 'Analysis failed - check n8n workflow execution');
                 }
             } catch (error) {
-                console.error('Analysis error:', error);
-                showErrorResult(error.message);
+                console.error('💥 Request failed:', error);
+                
+                // Enhanced error messages for common issues
+                let errorMessage = error.message;
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage = 'Connection failed. Check your webhook URL and ensure CORS is enabled in n8n.';
+                } else if (error.message.includes('404')) {
+                    errorMessage = 'Webhook not found (404). Please check your webhook URL.';
+                } else if (error.message.includes('500')) {
+                    errorMessage = 'Server error (500). Check your n8n workflow execution logs.';
+                }
+                
+                showErrorResult(errorMessage);
             } finally {
+                loadingDiv.classList.remove('active');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyze Account';
+            }
+        }); finally {
                 loadingDiv.classList.remove('active');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Analyze Account';
